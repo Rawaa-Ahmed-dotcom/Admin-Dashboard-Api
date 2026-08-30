@@ -1,0 +1,45 @@
+{
+  "name": "admin-dashboard-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch ./index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rawaa-Ahmed-dotcom/Admin-Dashboard-Api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Rawaa-Ahmed-dotcom/Admin-Dashboard-Api/issues"
+  },
+  "homepage": "https://github.com/Rawaa-Ahmed-dotcom/Admin-Dashboard-Api#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.4",
+    "nodemailer": "^9.0.6",
+    "slugify": "^1.6.9",
+    "zod": "^4.5.2",
+    "zod-validation-error": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.4.0",
+    "@types/nodemailer": "^8.0.1",
+    "tsx": "^4.23.12"
+  }
+}
