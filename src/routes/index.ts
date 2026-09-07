@@ -1,9 +1,10 @@
-import {Router} from "express";
-import authRouter from "./auth.route";
+import { Router } from "express";
+import adminRouter from "./admin/index";
+import userRouter from "./user/index";
+const globalRouter = Router();
 
-const router = Router();
+globalRouter.use("/api/admin", adminRouter);
+globalRouter.use("/api", userRouter);
 
-router.use("/auth" , authRouter);
 
-
-export default router;
+export default globalRouter;
