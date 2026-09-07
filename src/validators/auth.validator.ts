@@ -4,8 +4,9 @@ import z from "zod";
 export const authValidator = z.object({
   username: z
     .string({ message: "Username must be string" })
-    .regex(/^[a-zA-Z ]+$/, {
-      message: "Please use only letters and spaces for your username.",
+    .regex(/^[A-Za-z\u0621-\u064A]+ [A-Za-z\u0621-\u064A]+$/, {
+      message:
+        "Username must consist of exactly two words separated by a space, with no numbers or special characters (English or Arabic letters are allowed).",
     }),
   email: z.email().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, {
     message: "Please enter a valid email address (e.g., name@example.com).",

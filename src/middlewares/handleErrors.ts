@@ -14,10 +14,12 @@ export const handleErrors = (
 };
 
 const handleDevErrors = (err: BaseError, res: Response) => {
+  
   return res.status(err.statusCode).json({
     message: err.message,
     stack: err.stack,
     status: err.status,
+    name : err.name
   });
 };
 const handleProdErrors = (err: BaseError, res: Response) => {
