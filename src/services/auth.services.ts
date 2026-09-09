@@ -241,6 +241,6 @@ export const resetPassword = async (
   });
 
   const userObj = user.toObject();
-  delete userObj.password;
-  return res.status(200).json({message : "Password Reset successfully" , data: userObj})
+  const {password :pass , ...result} = userObj;
+  return res.status(200).json({message : "Password Reset successfully" , data: result});
 };

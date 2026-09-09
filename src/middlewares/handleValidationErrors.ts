@@ -3,9 +3,9 @@ import { Request, Response, NextFunction } from "express";
 import { fromError } from "zod-validation-error";
 import { BaseError } from "../utils/BaseError";
 interface Schemas {
-  body?: ZodType;
-  params?: ZodType;
-  query?: ZodType;
+  body?: ZodType<any, any, any>;
+  params?: ZodType<any, any, any>;
+  query?: ZodType<any, any, any>;
 }
 
 export const handleValidationErrors = (schemas: Schemas) => {

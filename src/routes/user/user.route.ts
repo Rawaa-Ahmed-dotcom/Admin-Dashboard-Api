@@ -24,6 +24,7 @@ import authRouter from "./auth.route";
 
 const userRouter = Router();
 
+
 userRouter.use(authProtect);
 
 // ============= USER SERVICES ===============
