@@ -46,11 +46,9 @@ userRouter.patch(
 
 
 // UPDATE USER DATA BY USER
-userRouter.patch(
-  "/:id",
+userRouter.patch("/",
   handleValidationErrors({
-    body: editUserDataValidator,
-    params: userParamsValidator,
+    body: editUserDataValidator
   }),
   AsyncHandler(editUser),
 );

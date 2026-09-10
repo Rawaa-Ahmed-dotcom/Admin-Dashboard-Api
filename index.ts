@@ -2,6 +2,17 @@ import express, { Application, Request, Response } from "express";
 import { config } from "dotenv";
 config();
 
+import swaggerUi from "swagger-ui-express";
+import fs from "node:fs";
+import YAML from "yaml";
+const swaggerYml = fs.readFileSync("./swagger/swagger.yml" , "utf8");
+
+const swaggerJsonDoc = YAML.parse(swaggerYml);
+
+
+
+
+
 
 import { handleErrors } from "./src/middlewares/handleErrors";
 import { createErrorMap } from "zod-validation-error";
@@ -20,6 +31,7 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJsonDoc));
 
 
 

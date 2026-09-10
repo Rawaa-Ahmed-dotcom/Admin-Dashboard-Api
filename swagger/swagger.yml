@@ -1,0 +1,1030 @@
+openapi: 3.2.0
+
+info:
+  title: Vestry E-commerce API
+  description: |-
+    REST API for Vestry, an e-commerce application.
+
+    The API provides functionality for:
+    - User authentication
+    - User management
+    - Profile management
+    - Password management
+    - Category management
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+
+tags:
+
+  - name: Auth
+    description: Authentication and password recovery
+
+  - name: Users
+    description: Authenticated user operations
+
+  - name: Admin Users
+    description: Admin operations for managing users
+
+  - name: Categories
+    description: Category management
+
+
+paths:
+
+  # =========================================================
+  # AUTH
+  # =========================================================
+
+  /auth/signup:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      description: Create a new user account and return an access token.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+        "400":
+          description: Validation error or user already exists
+
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login user
+      description: Authenticate a user using email and password.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+        "400":
+          description: Email or password is wrong
+
+
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Logout user
+      description: Clear the refresh token cookie.
+      security: []
+      responses:
+        "200":
+          description: Logout successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logout successfully
+
+        "500":
+          description: Missing refresh token cookie
+
+
+  /auth/forgot-password:
+    post:
+      tags:
+        - Auth
+      summary: Request password reset
+      description: Send a password reset code to the user's email.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Reset code sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Reset Code is sent
+
+        "400":
+          description: User not found
+        "500":
+          description: Error while sending the email
+
+
+  /auth/verify-reset-code:
+    post:
+      tags:
+        - Auth
+      summary: Verify password reset code
+      description: Verify the reset code sent to the user's email.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyResetCodeRequest"
+      responses:
+        "200":
+          description: Reset code successfully verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Reset code successfully verified
+
+        "400":
+          description: Reset code is invalid or expired
+
+
+  /auth/reset-password:
+    patch:
+      tags:
+        - Auth
+      summary: Reset user password
+      description: Reset the user's password using their email and new password.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password Reset successfully
+                  data:
+                    $ref: "#/components/schemas/User"
+
+        "400":
+          description: User with this email was not found
+
+
+  # =========================================================
+  # CATEGORIES
+  # =========================================================
+
+  /categories:
+    get:
+      tags:
+        - Categories
+      summary: Get all categories
+      description: Retrieve all categories.
+      security: []
+      responses:
+        "200":
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Category"
+
+    post:
+      tags:
+        - Categories
+      summary: Add a new category
+      description: Create a new category. Admin access required.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CreateCategoryRequest"
+      responses:
+        "201":
+          description: Category successfully added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Category Successfully Added
+                  newCategory:
+                    $ref: "#/components/schemas/Category"
+
+        "400":
+          description: Invalid request or category already exists
+        "401":
+          description: Authentication required
+        "403":
+          description: Admin access required
+
+
+  /categories/{id}:
+    get:
+      tags:
+        - Categories
+      summary: Get a single category
+      description: Retrieve a category by its MongoDB ObjectId.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/CategoryId"
+      responses:
+        "200":
+          description: Category retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Category"
+
+        "400":
+          description: Invalid category ID
+        "404":
+          description: Category not found
+
+    delete:
+      tags:
+        - Categories
+      summary: Delete a category
+      description: Delete a category by ID. Admin access required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CategoryId"
+      responses:
+        "200":
+          description: Category deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Category deleted successfully
+
+        "400":
+          description: Invalid category ID
+        "401":
+          description: Authentication required
+        "403":
+          description: Admin access required
+        "404":
+          description: Category not found
+
+    patch:
+      tags:
+        - Categories
+      summary: Update a category
+      description: Update category information and optionally replace its image. Admin access required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CategoryId"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UpdateCategoryRequest"
+      responses:
+        "200":
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: category updated successfully
+                  data:
+                    $ref: "#/components/schemas/Category"
+
+        "400":
+          description: Invalid request or category ID
+        "401":
+          description: Authentication required
+        "403":
+          description: Admin access required
+        "404":
+          description: Category not found
+
+
+  # =========================================================
+  # USERS
+  # =========================================================
+
+  /users:
+    patch:
+      tags:
+        - Users
+      summary: Update current user's profile
+      description: Update the authenticated user's username or phone number.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditUserRequest"
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User updated successfully
+                  data:
+                    $ref: "#/components/schemas/User"
+
+        "400":
+          description: User not found or validation error
+        "401":
+          description: Authentication required
+
+
+  /users/change-password:
+    patch:
+      tags:
+        - Users
+      summary: Change current user's password
+      description: Change the password of the authenticated user.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: password changed successfully
+
+        "400":
+          description: Invalid current password or validation error
+        "401":
+          description: Authentication required
+        "404":
+          description: User not found
+
+
+  /users/change-profile-img:
+    patch:
+      tags:
+        - Users
+      summary: Change current user's profile image
+      description: Upload and replace the authenticated user's profile image.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ChangeProfileImageRequest"
+      responses:
+        "200":
+          description: Profile image updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Profile image updated successfully
+                  data:
+                    $ref: "#/components/schemas/ProfileImage"
+
+        "400":
+          description: Profile image is required
+        "401":
+          description: Authentication required
+        "404":
+          description: User not found
+
+
+  # =========================================================
+  # ADMIN USERS
+  # =========================================================
+
+  /admin/users:
+    get:
+      tags:
+        - Admin Users
+      summary: Get all users
+      description: Retrieve all users. Admin access required.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+
+        "401":
+          description: Authentication required
+        "403":
+          description: Admin access required
+
+    post:
+      tags:
+        - Admin Users
+      summary: Add a new user
+      description: Create a new user from the admin dashboard.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User added successfully
+                  data:
+                    $ref: "#/components/schemas/User"
+
+        "400":
+          description: Validation error or profile image missing
+        "401":
+          description: Authentication required
+        "403":
+          description: Admin access required
+        "409":
+          description: User already exists
+
+
+  /admin/users/{id}:
+    get:
+      tags:
+        - Admin Users
+      summary: Get a single user
+      description: Retrieve a user by ID. Admin access required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/User"
+
+        "400":
+          description: Invalid user ID
+        "401":
+          description: Authentication required
+        "403":
+          description: Admin access required
+        "404":
+          description: User not found
+
+    patch:
+      tags:
+        - Admin Users
+      summary: Update a user
+      description: Update a user's username, phone, role, and optionally replace the profile image. Admin access required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UpdateUserByAdminRequest"
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: user updated successfully
+                  data:
+                    $ref: "#/components/schemas/User"
+
+        "400":
+          description: Validation error
+        "401":
+          description: Authentication required
+        "403":
+          description: Admin access required
+        "404":
+          description: User not found
+
+    delete:
+      tags:
+        - Admin Users
+      summary: Delete a user
+      description: Delete a user by ID. Admin access required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: user deleted successfully
+
+        "400":
+          description: Invalid user ID
+        "401":
+          description: Authentication required
+        "403":
+          description: Admin access required
+        "404":
+          description: User not found
+
+
+# =========================================================
+# COMPONENTS
+# =========================================================
+
+components:
+
+  # =======================================================
+  # SECURITY
+  # =======================================================
+
+  securitySchemes:
+
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+
+  # =======================================================
+  # PARAMETERS
+  # =======================================================
+
+  parameters:
+
+    CategoryId:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectId of the category
+      schema:
+        type: string
+        pattern: "^[a-fA-F0-9]{24}$"
+        example: 65f1a2b3c4d5e6f789012345
+
+    UserId:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectId of the user
+      schema:
+        type: string
+        pattern: "^[a-fA-F0-9]{24}$"
+        example: 65f1a2b3c4d5e6f789012345
+
+
+  # =======================================================
+  # SCHEMAS
+  # =======================================================
+
+  schemas:
+
+    # =====================================================
+    # AUTH
+    # =====================================================
+
+    SignupRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          description: Must contain exactly two words.
+          example: Rawaa Ahmed
+
+        email:
+          type: string
+          format: email
+          example: rawaa@example.com
+
+        password:
+          type: string
+          format: password
+          description: At least 8 characters with uppercase, lowercase, number, and special character.
+          example: Password@123
+
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: rawaa@example.com
+
+        password:
+          type: string
+          format: password
+          example: Password@123
+
+
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: User registered successfully!
+
+        data:
+          $ref: "#/components/schemas/AuthUserData"
+
+
+    AuthUserData:
+      allOf:
+        - $ref: "#/components/schemas/User"
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT access token.
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+
+    ForgotPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: rawaa@example.com
+
+
+    VerifyResetCodeRequest:
+      type: object
+      required:
+        - resetCode
+      properties:
+        resetCode:
+          type: string
+          description: Password reset verification code.
+          example: "123456"
+
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: rawaa@example.com
+
+        password:
+          type: string
+          format: password
+          description: At least 8 characters with uppercase, lowercase, number, and special character.
+          example: NewPassword@123
+
+
+    # =====================================================
+    # CATEGORY
+    # =====================================================
+
+    Category:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 65f1a2b3c4d5e6f789012345
+
+        title:
+          type: string
+          example: Running Shoes
+
+        description:
+          type: string
+          example: High-performance shoes for running.
+
+        img:
+          $ref: "#/components/schemas/CategoryImage"
+
+
+    CategoryImage:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://res.cloudinary.com/example/image/upload/category.jpg
+
+        public_id:
+          type: string
+          example: categories/category_123
+
+
+    CreateCategoryRequest:
+      type: object
+      required:
+        - title
+        - description
+        - img
+      properties:
+        title:
+          type: string
+          example: Running Shoes
+
+        description:
+          type: string
+          example: High-performance shoes for running.
+
+        img:
+          type: string
+          format: binary
+          description: Category image.
+
+
+    UpdateCategoryRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Running Shoes
+
+        description:
+          type: string
+          example: Updated category description.
+
+        img:
+          type: string
+          format: binary
+          description: Optional new category image.
+
+
+    # =====================================================
+    # USER
+    # =====================================================
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 65f1a2b3c4d5e6f789012345
+
+        username:
+          type: string
+          example: Rawaa Ahmed
+
+        slug:
+          type: string
+          example: rawaa-ahmed
+
+        email:
+          type: string
+          format: email
+          example: rawaa@example.com
+
+        phone:
+          type: string
+          example: "+201012345678"
+
+        role:
+          type: string
+          enum:
+            - user
+            - manager
+            - admin
+          example: user
+
+        profileImg:
+          $ref: "#/components/schemas/ProfileImage"
+
+
+    ProfileImage:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://res.cloudinary.com/example/image/upload/profile.jpg
+
+        public_id:
+          type: string
+          example: users/profile_123
+
+
+    EditUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: Rawaa Ahmed
+
+        phone:
+          type: string
+          example: "+201012345678"
+
+
+    ChangePasswordRequest:
+      type: object
+      required:
+        - newPassword
+        - confirmPassword
+        - currentPassword
+      properties:
+        newPassword:
+          type: string
+          format: password
+          example: NewPassword@123
+
+        confirmPassword:
+          type: string
+          format: password
+          example: NewPassword@123
+
+        currentPassword:
+          type: string
+          format: password
+          example: OldPassword@123
+
+
+    ChangeProfileImageRequest:
+      type: object
+      required:
+        - profileImg
+      properties:
+        profileImg:
+          type: string
+          format: binary
+          description: New profile image.
+
+
+    # =====================================================
+    # ADMIN USER
+    # =====================================================
+
+    CreateUserRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+        - phone
+        - profileImg
+      properties:
+        username:
+          type: string
+          example: John Doe
+
+        email:
+          type: string
+          format: email
+          example: john@example.com
+
+        password:
+          type: string
+          format: password
+          example: Password@123
+
+        phone:
+          type: string
+          example: "+201012345678"
+
+        role:
+          type: string
+          enum:
+            - user
+            - manager
+            - admin
+          example: user
+
+        profileImg:
+          type: string
+          format: binary
+          description: User profile image.
+
+
+    UpdateUserByAdminRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: John Doe
+
+        phone:
+          type: string
+          example: "+201012345678"
+
+        role:
+          type: string
+          enum:
+            - user
+            - manager
+            - admin
+          example: manager
+
+        profileImg:
+          type: string
+          format: binary
+          description: Optional new user profile image.

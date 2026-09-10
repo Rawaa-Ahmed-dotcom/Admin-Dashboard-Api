@@ -21,7 +21,7 @@ export const addUser = async (
   const user = await UserModel.findOne({ email });
 
   if (user) {
-    throw new BaseError("user already exists", 400);
+    throw new BaseError("user already exists", 409);
   }
 
   if (!profileImg) {
@@ -70,27 +70,35 @@ export const updateUserDataByAdmin = async (
 ) => {
   const { id } = req.params;
   const profileImg = req.file;
-  if (!profileImg) {
-    throw new BaseError("please, upload a profile image.", 400);
-  }
+
+  const updateData = {
+    ...req.body,
+    ...(profileImg && {
+      profileImg: {
+        url: profileImg.path,
+        public_id: profileImg.filename,
+      },
+    }),
+  };
+
   const user = await UserModel.findByIdAndUpdate(
     id,
-    {
-      ...req.body,
-      profileImg: { url: profileImg.path, public_id: profileImg.filename },
-    },
+    updateData,
     {
       runValidators: true,
       returnDocument: "after",
     },
   ).select("-password");
+
   if (!user) {
     throw new BaseError("user not found", 404);
   }
+
   return res
     .status(200)
     .json({ message: "user updated successfully", data: user });
 };
+
 
 export const getSingleUser = async (
   req: Request<z.infer<typeof userParamsValidator>, object, object, object>,
@@ -106,6 +114,8 @@ export const getSingleUser = async (
   return res.status(200).json({ data: user });
 };
 
+
+
 // ========= USER SERVICES ==============
 export const editUser = async (
   req: Request<
@@ -116,8 +126,8 @@ export const editUser = async (
   >,
   res: Response,
 ) => {
-  const { id } = req.params as z.infer<typeof userParamsValidator>;
-  const user = await UserModel.findById(id).select("-password");
+  const userId = req.userId;
+  const user = await UserModel.findById(userId).select("-password");
   if (!user) {
     throw new BaseError("user not found", 400);
   }
